@@ -1,0 +1,143 @@
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+			
+            <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+            
+            <script type="text/javascript">
+               
+                function GetMap()
+                {
+                        //get 4 points
+                    var lat1 = document.getElementById("lat1").value;
+                    var lon1 = document.getElementById("lon1").value;
+                    
+                    var lat2 = document.getElementById("lat2").value;
+                    var lon2 = document.getElementById("lon2").value;
+                    
+                    // Initialize the map
+					
+                    var map = new Microsoft.Maps.Map(document.getElementById("mapDiv"),{credentials:"At7RkDItXU6kncQzZa8M9lFfMbzPgmulJYLkhYn5JMMZfHL86lNyFZvGWWngxaAP",
+                        bounds:new Microsoft.Maps.LocationRect.fromCorners(new Microsoft.Maps.Location(lat1, lon1), new Microsoft.Maps.Location(lat2, lon2)),
+                        zoom:24,
+                        mapTypeId: Microsoft.Maps.MapTypeId.aerial,
+                        disableZooming: true,
+                        showCopyright: false,
+                        showDashboard: false,
+                        enableClickableLogo: false,
+                    });
+                    
+                    try
+                    {
+                        // Create the tile layer source
+                        var tileSource = new Microsoft.Maps.TileSource({uriConstructor: 'http://www.microsoft.com/maps/isdk/ajax/layers/lidar/{quadkey}.png'});
+                        
+                        // Construct the layer using the tile source
+                        var tilelayer= new Microsoft.Maps.TileLayer({ mercator: tileSource, opacity: .7 });
+                        
+                        // Push the tile layer to the map
+                        map.entities.push(tilelayer);
+						
+                        //First two pushpins show the input points user enters
+						var pushpin= new Microsoft.Maps.Pushpin((lat1 , lon1), {icon: 'red1.png', width: 0, height: 0, draggable: false} ); 
+						map.entities.push(pushpin); 
+						pushpin.setLocation(new Microsoft.Maps.Location(lat1, lon1)); 
+						
+            
+                        var pushpin2= new Microsoft.Maps.Pushpin((lat2 , lon2), {icon: 'red1.png', width: 0, height: 0, draggable: false} ); 
+						map.entities.push(pushpin2); 
+						pushpin2.setLocation(new Microsoft.Maps.Location(lat2, lon2)); 
+						
+						// These two pushpins are added by us to show 4 points, the preliminary stages for the bounding box
+                        var pushpin3= new Microsoft.Maps.Pushpin((lat1, lon2), {icon: 'red1.png', width: 0, height: 0, draggable: false} );
+						map.entities.push(pushpin3); 
+						pushpin3.setLocation(new Microsoft.Maps.Location(lat1, lon2)); 
+						
+                        var pushpin4= new Microsoft.Maps.Pushpin((lat2, lon1), {icon: 'red1.png', width: 0, height: 0, draggable: false} );
+						map.entities.push(pushpin4); 
+						pushpin4.setLocation(new Microsoft.Maps.Location(lat2, lon1)); 
+						
+						
+						// Disable mouse click and pan map
+						Microsoft.Maps.Events.addHandler(map, 'mousedown', function (mouseEvent) {
+						mouseEvent.handled = true; 
+						}); 
+						
+						// Calculating distance between two points
+						function toRad(Value) {
+						return Value * Math.PI / 180;}
+						
+						// Calculate vertical distance
+						var vR = 6371; // km
+						var vdLat = toRad(lat2-lat1);
+						var vdLon = toRad(lon1-lon1);
+						var vrlat1 = toRad(lat1);
+						var vrlat2 = toRad(lat2);
+
+						var va = Math.sin(vdLat/2) * Math.sin(vdLat/2) +
+						Math.sin(vdLon/2) * Math.sin(vdLon/2) * Math.cos(vrlat1) * Math.cos(vrlat2); 
+						var vc = 2 * Math.atan2(Math.sqrt(va), Math.sqrt(1-va)); 
+						var vd = vR * vc;	
+						
+						//Calculate horizontal distance
+						var hR = 6371; // km
+						var hdLat = toRad(lat1-lat1);
+						var hdLon = toRad(lon2-lon1);
+						var hrlat1 = toRad(lat1);
+						var hrlat2 = toRad(lat1);
+
+						var ha = Math.sin(hdLat/2) * Math.sin(hdLat/2) +
+						Math.sin(hdLon/2) * Math.sin(hdLon/2) * Math.cos(hrlat1) * Math.cos(hrlat2); 
+						var hc = 2 * Math.atan2(Math.sqrt(ha), Math.sqrt(1-ha)); 
+						var hd = hR * hc;
+						
+                        //Displaying the horizontal and vertical distance between the points in kilometers
+						alert('Distance Between the Points: \n\nHorizontal Distance = ' + hd + ' km'+ '\nVertical Distance = ' + vd+ ' km');
+						
+                    }
+                    catch(err)
+                    {
+                        alert( 'Error Message:' + err.message);
+                    }
+                }
+            
+                </script>
+            </head>
+    
+    
+    <!-- this is the html code which executes the above javascript -->
+    <body onload="GetMap();">
+        <body bgcolor="#9FB6CD">
+        <right>
+            <font size="2"> <code><h4><i>|| Coded by: Saad Mahmood, Saeed Patel ||</i></h4></font>
+      
+        </right>
+        <center>
+            <h1></h1>
+            <h3>Input Points</h3>
+            Coordinate 1 (Upper Left Point):
+            </br>
+            Latitude 1: <input type="text" id="lat1" value=""><br>
+            Longitude 1: <input type="text" id="lon1" value=""><br>
+            Coordinate 2 (Lower Right Point):
+            </br>
+            Latitude 2: <input type="text" id="lat2" value=""><br>
+            Longitude 2: <input type="text" id="lon2"value=""><br>
+            <input type="submit" value="submit" onclick="GetMap()">
+            </br>
+        
+        <div id='mapDiv' typename="mapDiv" style="position:relative; width:675px; height:675px;"></div>
+        
+        <script>
+            $('#mapDiv div.mapDiv').trigger($.event('click'));
+        </script>
+        </center> </code>
+    </body>
+</html>
+
+
+
+
+
+
